@@ -1,53 +1,32 @@
-import sys, time, torch
 from transformers import AutoTokenizer, T5ForConditionalGeneration
+import torch
 
-# my ckpt150 model
-MODEL_DIR = "codebridge/models/codet5p_220m_merged_ckpt150"
+MODEL_DIR = "yit314/codet5p-220m-merged-ckpt150" # uploaded to HF
 
-MAX_NEW_TOKENS = 256
-INP_MAX_LEN = 256
+device = "cuda" if torch.cuda.is_available() else "cpu"
+dtype  = torch.float16 if device=="cuda" else torch.float32
+tok   = AutoTokenizer.from_pretrained(MODEL_DIR)
+model = T5ForConditionalGeneration.from_pretrained(MODEL_DIR, torch_dtype=dtype).to(device)
+model.eval(); model.config.use_cache=True
 
-def pick_device():
-    if torch.cuda.is_available():
-        return "cuda"
-    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-        return "mps"
-    return "cpu"
-
-def load_model(model_dir: str, device: str):
-    tok = AutoTokenizer.from_pretrained(model_dir)
-    model = T5ForConditionalGeneration.from_pretrained(model_dir).to(device)
-    model.eval()
-    model.config.use_cache = True
-    return tok, model
-
+import torch, time
 @torch.inference_mode()
-def generate_code(tok, model, device: str, task: str) -> str:
+def generate_code(task, max_new_tokens=256):
     prompt = f"Generate Python code:\nTask: {task}\nCode:"
-    inputs = tok(prompt, return_tensors="pt", truncation=True, max_length=INP_MAX_LEN).to(device)
-    out = model.generate(
-        **inputs,
-        max_new_tokens=MAX_NEW_TOKENS,
-        num_beams=1,
-        no_repeat_ngram_size=3,
-        repetition_penalty=1.05,
-    )
+    inputs = tok(prompt, return_tensors="pt", truncation=True, max_length=256).to(device)
+    out = model.generate(**inputs, max_new_tokens=max_new_tokens,
+                         num_beams=4, no_repeat_ngram_size=3, repetition_penalty=1.05)
     return tok.decode(out[0], skip_special_tokens=True)
 
+# print(generate_code("Write a function two_sum(nums, target) that returns indices of two numbers adding up to target."))
+
+
 def main():
-    device = pick_device()
-    print(f"[device] {device}")
-    tok, model = load_model(MODEL_DIR, device)
-
-    if len(sys.argv) > 1:
-        task = " ".join(sys.argv[1:]).strip()
-        t0 = time.time()
-        code = generate_code(tok, model, device, task)
-        print(f"\n# Time: {time.time()-t0:.2f}s\n")
-        print(code)
-        return
-
-    print("Loaded merged model. Type quit/exit to terminate")
+    # interactive
+    print("""
+Please input an instruction in English
+for example: write a function that adds two numbers in Python.
+(type quit or exit to terminate).""")
     while True:
         try:
             task = input("\nTask> ").strip()
@@ -56,7 +35,7 @@ def main():
         if task == "" or task.lower() in {"quit", "exit"}:
             print("Bye."); break
         t0 = time.time()
-        code = generate_code(tok, model, device, task)
+        code = generate_code(task)
         print(f"\n# Time: {time.time()-t0:.2f}s\n")
         print(code)
 

@@ -1,0 +1,17 @@
+# Core HF stack
+transformers>=4.40,<5
+peft>=0.11
+datasets>=2.18
+evaluate>=0.4
+accelerate>=0.29
+huggingface_hub>=0.23
+
+# T5/CodeT5p needs
+sentencepiece>=0.1.99
+protobuf>=4.25
+
+# Utils
+sacrebleu>=2.3
+tqdm
+numpy
+pandas

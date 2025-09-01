@@ -1,0 +1,72 @@
+# -----------------------------
+# Python
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# -----------------------------
+# Virtual environments & pip
+# -----------------------------
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+
+# -----------------------------
+# Jupyter / Colab
+# -----------------------------
+.ipynb_checkpoints/
+*.ipynb~
+
+# -----------------------------
+# OS / Editors
+# -----------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# -----------------------------
+# Logs / experiment outputs
+# -----------------------------
+*.log
+wandb/
+mlruns/
+lightning_logs/
+
+# -----------------------------
+# Large ML artifacts
+# (tracked elsewhere: HF Hub or Git LFS)
+# -----------------------------
+# Models
+codebridge/models/
+# keep a placeholder so the folder exists in repo
+!codebridge/models/README.md
+
+# Common large weight files (anywhere)
+*.bin
+*.safetensors
+*.pt
+*.ckpt
+
+# Datasets / caches
+codebridge/data/
+!codebridge/data/README.md
+datasets/
+.cache/
+.hf_cache/
+.huggingface/
+
+# -----------------------------
+# Results
+# keep light CSVs but ignore heavy blobs
+# -----------------------------
+results/
+!results/*.csv
+!results/README.md
